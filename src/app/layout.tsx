@@ -5,6 +5,7 @@ import { CartProvider } from '@/context/CartContext';
 import { ToastProvider } from '@/components/Toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Analytics } from '@vercel/analytics/next';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -42,6 +43,7 @@ export default function RootLayout({
             <Footer />
           </ToastProvider>
         </CartProvider>
+        <Analytics />
       </body>
     </html>
   );
