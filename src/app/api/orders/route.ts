@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(order, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
+  } catch (err) {
+    console.error('Order creation error:', err);
+    return NextResponse.json({ error: String(err) }, { status: 400 });
   }
 }
