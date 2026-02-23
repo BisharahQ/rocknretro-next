@@ -1,0 +1,11 @@
+{
+  "deliveryFees": {
+    "amman": 2,
+    "outside": 4
+  },
+  "tax": {
+    "enabled": true,
+    "rate": 16,
+    "label": "GST"
+  }
+}

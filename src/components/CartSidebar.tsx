@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 
 interface CartSidebarProps {
@@ -10,6 +11,7 @@ interface CartSidebarProps {
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const router = useRouter();
 
   return (
     <>
@@ -81,7 +83,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <span className="text-sm text-slate-400 uppercase tracking-wider">Total</span>
               <span className="text-xl font-bold text-primary">{totalPrice} JOD</span>
             </div>
-            <button className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg uppercase tracking-wider text-sm transition-colors">
+            <button
+              onClick={() => { onClose(); router.push('/checkout'); }}
+              className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg uppercase tracking-wider text-sm transition-colors"
+            >
               Checkout
             </button>
             <button
