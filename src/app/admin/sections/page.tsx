@@ -173,6 +173,15 @@ export default function AdminSections() {
               </div>
             </div>
             <div>
+              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Map URL</label>
+              <input
+                type="text"
+                value={sections.contact.mapUrl}
+                onChange={e => setSections({ ...sections, contact: { ...sections.contact, mapUrl: e.target.value } })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-bone focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+              />
+            </div>
+            <div>
               <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Instagram Handle</label>
               <input
                 type="text"

@@ -46,6 +46,7 @@ export interface SiteConfig {
     phone: string;
     email: string;
     address: string;
+    mapUrl: string;
     instagram: string;
     hours: string;
   };

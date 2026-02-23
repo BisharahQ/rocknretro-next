@@ -208,11 +208,11 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <div className="text-center p-6 bg-white/5 rounded-lg border border-white/5 hover:border-primary/20 transition-colors">
+            <a href={sections.contact.mapUrl} target="_blank" rel="noopener noreferrer" className="text-center p-6 bg-white/5 rounded-lg border border-white/5 hover:border-primary/20 transition-colors block group">
               <svg className="w-8 h-8 text-primary mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               <h3 className="font-heading text-lg tracking-wider uppercase mb-1">Location</h3>
-              <p className="text-sm text-slate-400">{sections.contact.address}</p>
-            </div>
+              <p className="text-sm text-slate-400 group-hover:text-primary transition-colors">{sections.contact.address}</p>
+            </a>
             <div className="text-center p-6 bg-white/5 rounded-lg border border-white/5 hover:border-primary/20 transition-colors">
               <svg className="w-8 h-8 text-primary mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               <h3 className="font-heading text-lg tracking-wider uppercase mb-1">Hours</h3>

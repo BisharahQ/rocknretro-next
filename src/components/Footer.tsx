@@ -35,7 +35,7 @@ export default function Footer() {
         <div>
           <h3 className="font-heading text-lg tracking-wider uppercase mb-4 text-gold-accent">Contact</h3>
           <div className="flex flex-col gap-2 text-sm text-slate-500">
-            <p>Amman, Jordan</p>
+            <a href="https://www.google.com/maps/search/Mecca+Street+Behind+Auto+Mall+Amman+Jordan" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Mecca St, Behind Auto Mall, Amman</a>
             <p>Sat&ndash;Thu: 11AM&ndash;9PM</p>
             <a href="https://instagram.com/rocknretroo" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">@rocknretroo</a>
           </div>
