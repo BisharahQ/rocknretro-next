@@ -38,6 +38,7 @@ export async function createProduct(product: Omit<Product, 'id'>): Promise<Produ
       img: product.img,
       images: product.images,
       badge: product.badge,
+      stock: product.stock ?? 1,
       sold: product.sold ?? false,
       reserved: product.reserved ?? false,
       description: product.description ?? null,
@@ -78,6 +79,7 @@ function toProduct(row: {
   img: string;
   images: string[];
   badge: string | null;
+  stock: number;
   sold: boolean;
   reserved: boolean;
   description: string | null;
@@ -94,6 +96,7 @@ function toProduct(row: {
     img: row.img,
     images: row.images,
     badge: row.badge,
+    stock: row.stock,
     sold: row.sold,
     reserved: row.reserved,
     description: row.description ?? undefined,
@@ -112,6 +115,7 @@ function sanitizeUpdates(updates: Partial<Product>): Record<string, unknown> {
   if (updates.img !== undefined) data.img = updates.img;
   if (updates.images !== undefined) data.images = updates.images;
   if (updates.badge !== undefined) data.badge = updates.badge;
+  if (updates.stock !== undefined) data.stock = updates.stock;
   if (updates.sold !== undefined) data.sold = updates.sold;
   if (updates.reserved !== undefined) data.reserved = updates.reserved;
   if (updates.description !== undefined) data.description = updates.description;

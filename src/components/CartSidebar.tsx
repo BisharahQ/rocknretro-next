@@ -61,7 +61,12 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     <span className="text-xs w-6 text-center">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-primary/20 transition-colors text-xs"
+                      disabled={item.quantity >= (item.product.stock ?? 1)}
+                      className={`w-6 h-6 rounded flex items-center justify-center transition-colors text-xs ${
+                        item.quantity >= (item.product.stock ?? 1)
+                          ? 'bg-white/5 text-slate-600 cursor-not-allowed'
+                          : 'bg-white/10 hover:bg-primary/20'
+                      }`}
                     >+</button>
                     <button
                       onClick={() => removeItem(item.product.id)}

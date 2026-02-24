@@ -20,6 +20,7 @@ export default function ProductForm({ product, onSave, saving }: ProductFormProp
   const [cat, setCat] = useState(product?.cat || 'hoodies');
   const [price, setPrice] = useState(product?.price?.toString() || '');
   const [badge, setBadge] = useState(product?.badge || '');
+  const [stock, setStock] = useState(product?.stock?.toString() || '1');
   const [sold, setSold] = useState(product?.sold || false);
   const [featured, setFeatured] = useState(product?.featured || false);
   const [description, setDescription] = useState(product?.description || '');
@@ -63,6 +64,7 @@ export default function ProductForm({ product, onSave, saving }: ProductFormProp
       size,
       cat,
       price: Number(price),
+      stock: Math.max(1, Number(stock) || 1),
       badge: badge || null,
       sold,
       featured,
@@ -113,8 +115,8 @@ export default function ProductForm({ product, onSave, saving }: ProductFormProp
         </div>
       </div>
 
-      {/* Category & Price */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Category, Price & Stock */}
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Category</label>
           <select
@@ -137,6 +139,18 @@ export default function ProductForm({ product, onSave, saving }: ProductFormProp
             min="0"
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-bone placeholder:text-slate-600 focus:ring-1 focus:ring-primary focus:border-primary outline-none"
             placeholder="25"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Stock *</label>
+          <input
+            type="number"
+            value={stock}
+            onChange={e => setStock(e.target.value)}
+            required
+            min="1"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-bone placeholder:text-slate-600 focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+            placeholder="1"
           />
         </div>
       </div>

@@ -42,10 +42,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (product.sold || product.reserved) return;
     setItems(prev => {
       const existing = prev.find(i => i.product.id === product.id);
+      const maxQty = product.stock ?? 1;
       if (existing) {
+        if (existing.quantity >= maxQty) return prev;
         return prev.map(i =>
           i.product.id === product.id
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: Math.min(i.quantity + 1, maxQty) }
             : i
         );
       }
@@ -64,9 +66,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     setItems(prev =>
-      prev.map(i =>
-        i.product.id === productId ? { ...i, quantity } : i
-      )
+      prev.map(i => {
+        if (i.product.id !== productId) return i;
+        const maxQty = i.product.stock ?? 1;
+        return { ...i, quantity: Math.min(quantity, maxQty) };
+      })
     );
   }, []);
 

@@ -8,6 +8,7 @@ export interface Product {
   img: string;
   images: string[];
   badge: string | null;
+  stock: number;
   sold: boolean;
   reserved?: boolean;
   description?: string;

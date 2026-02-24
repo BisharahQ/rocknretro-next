@@ -17,6 +17,7 @@ model Product {
   img         String
   images      String[]
   badge       String?
+  stock       Int         @default(1)
   sold        Boolean     @default(false)
   reserved    Boolean     @default(false)
   description String?
