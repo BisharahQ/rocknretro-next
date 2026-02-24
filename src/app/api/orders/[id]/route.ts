@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrderById, updateOrderStatus } from '@/lib/orders';
+import { getOrderById, updateOrder } from '@/lib/orders';
+import { updateProduct } from '@/lib/products';
 
 export async function GET(
   request: NextRequest,
@@ -17,16 +18,49 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { status } = await request.json();
-    const validStatuses = ['pending', 'confirmed', 'shipped', 'ready', 'delivered', 'picked_up', 'cancelled'];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
-    }
-    const order = updateOrderStatus(Number(params.id), status);
+    const body = await request.json();
+    const order = getOrderById(Number(params.id));
+
     if (!order) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
-    return NextResponse.json(order);
+
+    // Handle status change
+    if (body.status) {
+      const validStatuses = ['reserved', 'picked_up', 'cancelled', 'expired'];
+      if (!validStatuses.includes(body.status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      }
+
+      // Handle product state changes based on status transition
+      if (body.status === 'picked_up' && order.status === 'reserved') {
+        // Mark products as sold, remove reserved flag
+        for (const item of order.items) {
+          updateProduct(item.productId, { sold: true, reserved: false });
+        }
+      } else if (
+        (body.status === 'cancelled' || body.status === 'expired') &&
+        order.status === 'reserved'
+      ) {
+        // Release reserved products
+        for (const item of order.items) {
+          updateProduct(item.productId, { reserved: false });
+        }
+      } else if (body.status === 'reserved' && order.status === 'expired') {
+        // Re-activate expired reservation (extend) — re-reserve products
+        for (const item of order.items) {
+          updateProduct(item.productId, { reserved: true });
+        }
+      }
+    }
+
+    // Build update object (status and/or reservedUntil for extending)
+    const updates: Record<string, unknown> = {};
+    if (body.status) updates.status = body.status;
+    if (body.reservedUntil) updates.reservedUntil = body.reservedUntil;
+
+    const updated = updateOrder(Number(params.id), updates);
+    return NextResponse.json(updated);
   } catch {
     return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
   }

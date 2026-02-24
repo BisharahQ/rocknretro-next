@@ -56,94 +56,27 @@ export default function AdminSettings() {
       </div>
 
       <div className="space-y-8">
-        {/* Delivery Fees */}
+        {/* Reservation Policy */}
         <div className="bg-white/5 rounded-lg p-6 border border-white/5">
-          <h2 className="font-heading text-xl tracking-wider uppercase mb-4 text-primary">Delivery Fees</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Amman (JOD)</label>
-              <input
-                type="number"
-                value={settings.deliveryFees.amman}
-                onChange={e => setSettings({
-                  ...settings,
-                  deliveryFees: { ...settings.deliveryFees, amman: Number(e.target.value) }
-                })}
-                min="0"
-                step="0.5"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Outside Amman (JOD)</label>
-              <input
-                type="number"
-                value={settings.deliveryFees.outside}
-                onChange={e => setSettings({
-                  ...settings,
-                  deliveryFees: { ...settings.deliveryFees, outside: Number(e.target.value) }
-                })}
-                min="0"
-                step="0.5"
-                className={inputClass}
-              />
-            </div>
-          </div>
-          <p className="text-xs text-slate-600 mt-3">Pickup is always free. These fees apply to delivery orders only.</p>
-        </div>
-
-        {/* Tax */}
-        <div className="bg-white/5 rounded-lg p-6 border border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-xl tracking-wider uppercase text-primary">Tax</h2>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.tax.enabled}
-                onChange={e => setSettings({
-                  ...settings,
-                  tax: { ...settings.tax, enabled: e.target.checked }
-                })}
-                className="accent-primary w-4 h-4"
-              />
-              <span className="text-sm text-slate-400">{settings.tax.enabled ? 'Enabled' : 'Disabled'}</span>
-            </label>
-          </div>
-          <div className={`grid grid-cols-2 gap-4 ${!settings.tax.enabled ? 'opacity-40 pointer-events-none' : ''}`}>
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Rate (%)</label>
-              <input
-                type="number"
-                value={settings.tax.rate}
-                onChange={e => setSettings({
-                  ...settings,
-                  tax: { ...settings.tax, rate: Number(e.target.value) }
-                })}
-                min="0"
-                max="100"
-                step="0.5"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Label</label>
-              <input
-                type="text"
-                value={settings.tax.label}
-                onChange={e => setSettings({
-                  ...settings,
-                  tax: { ...settings.tax, label: e.target.value }
-                })}
-                placeholder="e.g. GST, VAT, Sales Tax"
-                className={inputClass}
-              />
-            </div>
+          <h2 className="font-heading text-xl tracking-wider uppercase mb-4 text-primary">Reservation Policy</h2>
+          <div>
+            <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Reservation Duration (Days)</label>
+            <input
+              type="number"
+              value={settings.reservationDays}
+              onChange={e => setSettings({
+                ...settings,
+                reservationDays: Math.max(1, Number(e.target.value)),
+              })}
+              min="1"
+              max="30"
+              step="1"
+              className={inputClass}
+            />
           </div>
           <p className="text-xs text-slate-600 mt-3">
-            {settings.tax.enabled
-              ? `${settings.tax.label} at ${settings.tax.rate}% will be added to all orders.`
-              : 'Tax is currently disabled. No tax will be added to orders.'
-            }
+            Items will be reserved for {settings.reservationDays} day{settings.reservationDays !== 1 ? 's' : ''}.
+            Expired reservations are automatically flagged and items become available again.
           </p>
         </div>
       </div>

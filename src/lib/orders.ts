@@ -1,4 +1,5 @@
 import { Order } from '@/types';
+import { updateProduct } from './products';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,11 +14,35 @@ function writeOrders(orders: Order[]): void {
   fs.writeFileSync(DATA_PATH, JSON.stringify(orders, null, 2), 'utf-8');
 }
 
+/** Check for expired reservations and auto-flag them */
+export function processExpiredOrders(): void {
+  const orders = readOrders();
+  const now = new Date();
+  let changed = false;
+
+  for (const order of orders) {
+    if (order.status === 'reserved' && new Date(order.reservedUntil) < now) {
+      order.status = 'expired';
+      changed = true;
+      // Release reserved products
+      for (const item of order.items) {
+        updateProduct(item.productId, { reserved: false });
+      }
+    }
+  }
+
+  if (changed) {
+    writeOrders(orders);
+  }
+}
+
 export function getAllOrders(): Order[] {
+  processExpiredOrders();
   return readOrders();
 }
 
 export function getOrderById(id: number): Order | undefined {
+  processExpiredOrders();
   return readOrders().find(o => o.id === id);
 }
 
@@ -27,7 +52,7 @@ export function createOrder(order: Omit<Order, 'id' | 'createdAt' | 'status'>): 
   const newOrder: Order = {
     ...order,
     id: maxId + 1,
-    status: 'pending',
+    status: 'reserved',
     createdAt: new Date().toISOString(),
   };
   orders.push(newOrder);
@@ -35,11 +60,11 @@ export function createOrder(order: Omit<Order, 'id' | 'createdAt' | 'status'>): 
   return newOrder;
 }
 
-export function updateOrderStatus(id: number, status: Order['status']): Order | null {
+export function updateOrder(id: number, updates: Partial<Order>): Order | null {
   const orders = readOrders();
   const index = orders.findIndex(o => o.id === id);
   if (index === -1) return null;
-  orders[index].status = status;
+  orders[index] = { ...orders[index], ...updates };
   writeOrders(orders);
   return orders[index];
 }

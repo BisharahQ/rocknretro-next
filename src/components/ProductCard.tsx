@@ -14,9 +14,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { show } = useToast();
 
+  const unavailable = product.sold || product.reserved;
+
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (product.sold) return;
+    if (unavailable) return;
     addItem(product);
     show(`${product.name} added to bag!`);
   };
@@ -33,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
 
         {/* Badge */}
-        {product.badge && !product.sold && (
+        {product.badge && !unavailable && (
           <span className={`absolute top-3 left-3 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
             product.badge === 'Hot' ? 'bg-primary text-white' :
             product.badge === 'Rare' ? 'bg-gold-accent text-black' :
@@ -52,8 +54,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
+        {/* Reserved badge */}
+        {product.reserved && !product.sold && (
+          <div className="absolute inset-0 bg-amber-950/60 flex items-center justify-center">
+            <span className="bg-amber-500 text-black px-4 py-2 rounded font-heading text-xl tracking-wider uppercase -rotate-12">
+              Reserved
+            </span>
+          </div>
+        )}
+
         {/* Quick add */}
-        {!product.sold && (
+        {!unavailable && (
           <button
             onClick={handleAdd}
             className="absolute bottom-3 left-3 right-3 bg-primary hover:bg-primary-dark text-white text-xs font-bold uppercase tracking-wider py-2.5 rounded opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
@@ -67,7 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="mt-3 space-y-1">
         <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{product.name}</h3>
         <p className="text-xs text-slate-500">{product.type} &middot; {product.size}</p>
-        <p className={`font-bold text-sm ${product.sold ? 'text-slate-500 line-through' : 'text-primary'}`}>
+        <p className={`font-bold text-sm ${product.sold ? 'text-slate-500 line-through' : product.reserved ? 'text-amber-500' : 'text-primary'}`}>
           {product.price} JOD
         </p>
       </div>

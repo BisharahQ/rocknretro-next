@@ -9,6 +9,7 @@ export interface Product {
   images: string[];
   badge: string | null;
   sold: boolean;
+  reserved?: boolean;
   description?: string;
   featured?: boolean;
   createdAt?: string;
@@ -72,27 +73,15 @@ export interface Order {
   customer: {
     name: string;
     phone: string;
-    city?: string;
-    address?: string;
     notes?: string;
   };
-  type: 'delivery' | 'pickup';
   subtotal: number;
-  deliveryFee: number;
-  tax: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'ready' | 'delivered' | 'picked_up' | 'cancelled';
+  status: 'reserved' | 'picked_up' | 'cancelled' | 'expired';
+  reservedUntil: string;
   createdAt: string;
 }
 
 export interface ShopSettings {
-  deliveryFees: {
-    amman: number;
-    outside: number;
-  };
-  tax: {
-    enabled: boolean;
-    rate: number;
-    label: string;
-  };
+  reservationDays: number;
 }

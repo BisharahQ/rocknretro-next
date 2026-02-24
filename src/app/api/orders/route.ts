@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders, createOrder } from '@/lib/orders';
 import { getProductById, updateProduct } from '@/lib/products';
+import { getSettings } from '@/lib/settings';
 
 export async function GET() {
   const orders = getAllOrders();
@@ -20,14 +21,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
     }
 
-    if (body.type === 'delivery' && (!body.customer.city || !body.customer.address)) {
-      return NextResponse.json({ error: 'City and address required for delivery' }, { status: 400 });
-    }
-
-    // Check all items are still available
+    // Check all items are still available (not sold or reserved)
     for (const item of body.items) {
       const product = getProductById(item.productId);
-      if (!product || product.sold) {
+      if (!product || product.sold || product.reserved) {
         return NextResponse.json(
           { error: `"${item.name}" is no longer available` },
           { status: 409 }
@@ -35,23 +32,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Calculate reservation expiry
+    const settings = getSettings();
+    const reservedUntil = new Date();
+    reservedUntil.setDate(reservedUntil.getDate() + settings.reservationDays);
+
     const order = createOrder({
       items: body.items,
-      customer: body.customer,
-      type: body.type,
+      customer: {
+        name: body.customer.name,
+        phone: body.customer.phone,
+        notes: body.customer.notes || undefined,
+      },
       subtotal: body.subtotal,
-      deliveryFee: body.deliveryFee,
-      tax: body.tax,
       total: body.total,
+      reservedUntil: reservedUntil.toISOString(),
     });
 
-    // Mark items as sold
+    // Mark items as reserved
     for (const item of order.items) {
-      updateProduct(item.productId, { sold: true });
+      updateProduct(item.productId, { reserved: true });
     }
 
     return NextResponse.json(order, { status: 201 });
   } catch {
-    return NextResponse.json({ error: 'Failed to place order' }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to place reservation' }, { status: 400 });
   }
 }

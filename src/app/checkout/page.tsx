@@ -7,22 +7,14 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShopSettings } from '@/types';
 
-const JORDANIAN_CITIES = [
-  'Amman', 'Zarqa', 'Irbid', 'Aqaba', 'Salt', 'Mafraq',
-  'Jerash', 'Madaba', 'Karak', 'Tafilah', "Ma'an", 'Ajloun',
-];
-
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart, setIsOpen } = useCart();
   const router = useRouter();
 
   const [settings, setSettings] = useState<ShopSettings | null>(null);
-  const [orderType, setOrderType] = useState<'delivery' | 'pickup'>('delivery');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('+962');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
-  const [notes, setNotes] = useState('');
+  const [acknowledged, setAcknowledged] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,14 +50,6 @@ export default function CheckoutPage() {
     );
   }
 
-  const deliveryFee = orderType === 'delivery'
-    ? (city === 'Amman' ? settings.deliveryFees.amman : city ? settings.deliveryFees.outside : 0)
-    : 0;
-  const taxAmount = settings.tax.enabled
-    ? Math.round(totalPrice * settings.tax.rate) / 100
-    : 0;
-  const orderTotal = totalPrice + deliveryFee + taxAmount;
-
   const validatePhone = (p: string) => /^\+962\d{8,9}$/.test(p);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,19 +57,15 @@ export default function CheckoutPage() {
     setError('');
 
     if (!name.trim()) {
-      setError('Please enter your name');
+      setError('Please enter your full name');
       return;
     }
     if (!validatePhone(phone)) {
       setError('Please enter a valid Jordanian phone number (e.g. +962791234567)');
       return;
     }
-    if (orderType === 'delivery' && !city) {
-      setError('Please select a city');
-      return;
-    }
-    if (orderType === 'delivery' && !address.trim()) {
-      setError('Please enter your delivery address');
+    if (!acknowledged) {
+      setError('Please acknowledge the reservation terms');
       return;
     }
 
@@ -102,13 +82,9 @@ export default function CheckoutPage() {
       customer: {
         name: name.trim(),
         phone,
-        ...(orderType === 'delivery' ? { city, address: address.trim(), notes: notes.trim() || undefined } : {}),
       },
-      type: orderType,
       subtotal: totalPrice,
-      deliveryFee,
-      tax: taxAmount,
-      total: orderTotal,
+      total: totalPrice,
     };
 
     try {
@@ -143,44 +119,24 @@ export default function CheckoutPage() {
           <Link href="/shop" className="text-slate-500 hover:text-primary transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </Link>
-          <h1 className="font-heading text-3xl lg:text-4xl tracking-wider uppercase">Checkout</h1>
+          <h1 className="font-heading text-3xl lg:text-4xl tracking-wider uppercase">Reserve Items</h1>
         </div>
 
         <div className="grid lg:grid-cols-5 gap-8">
           {/* Form - Left */}
           <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
-            {/* Order Type */}
-            <div>
-              <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Order Type</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setOrderType('delivery')}
-                  className={`p-4 rounded-lg border text-sm font-bold uppercase tracking-wider transition-colors ${
-                    orderType === 'delivery'
-                      ? 'bg-primary/10 border-primary text-primary'
-                      : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
-                  }`}
-                >
-                  <svg className="w-5 h-5 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  Delivery
-                  <span className="block text-[10px] font-normal mt-0.5 opacity-60">
-                    {settings.deliveryFees.amman}–{settings.deliveryFees.outside} JOD
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderType('pickup')}
-                  className={`p-4 rounded-lg border text-sm font-bold uppercase tracking-wider transition-colors ${
-                    orderType === 'pickup'
-                      ? 'bg-primary/10 border-primary text-primary'
-                      : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
-                  }`}
-                >
-                  <svg className="w-5 h-5 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                  Pickup
-                  <span className="block text-[10px] font-normal mt-0.5 opacity-60">Free</span>
-                </button>
+            {/* Reservation Info Banner */}
+            <div className="bg-amber-500/10 rounded-lg p-5 border border-amber-500/20">
+              <div className="flex gap-3">
+                <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                <div>
+                  <p className="text-sm text-amber-500 font-bold mb-1">Cash Only — Pickup Reservation</p>
+                  <p className="text-sm text-amber-500/80">
+                    Items will be reserved for <span className="font-bold text-amber-500">{settings.reservationDays} day{settings.reservationDays !== 1 ? 's' : ''}</span>.
+                    Payment is cash only, collected when you pick up at our shop.
+                    Unclaimed reservations will expire automatically.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -212,69 +168,30 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Delivery Fields */}
-            {orderType === 'delivery' && (
-              <div className="bg-white/5 rounded-lg p-6 border border-white/5 space-y-4">
-                <h2 className="font-heading text-xl tracking-wider uppercase text-primary">Delivery Address</h2>
-                <div>
-                  <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">City *</label>
-                  <select
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    required
-                    className={`${inputClass} appearance-none cursor-pointer`}
-                  >
-                    <option value="" className="bg-surface text-slate-500">Select city...</option>
-                    {JORDANIAN_CITIES.map(c => (
-                      <option key={c} value={c} className="bg-surface text-bone">{c}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Address Details *</label>
-                  <textarea
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    placeholder="Street, building, floor, apartment..."
-                    required
-                    rows={3}
-                    className={`${inputClass} resize-none`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1">Notes (Optional)</label>
-                  <input
-                    type="text"
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    placeholder='e.g. "Ring twice", "Near X landmark"'
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Pickup Info */}
-            {orderType === 'pickup' && (
-              <div className="bg-white/5 rounded-lg p-6 border border-white/5">
-                <h2 className="font-heading text-xl tracking-wider uppercase text-primary mb-3">Pickup Info</h2>
-                <p className="text-sm text-slate-400">
-                  Pick up at our shop: <span className="text-bone">Muhammad Ali As-Saadi St. 24, Amman</span>
-                </p>
-                <p className="text-sm text-slate-400 mt-1">
-                  Hours: <span className="text-bone">Sat–Thu: 11AM–9PM</span>
-                </p>
-                <p className="text-xs text-slate-500 mt-3">We&apos;ll contact you when your order is ready.</p>
-              </div>
-            )}
-
-            {/* Payment Note */}
-            <div className="bg-gold-accent/10 rounded-lg p-4 border border-gold-accent/20">
-              <p className="text-sm text-gold-accent">
-                <svg className="w-4 h-4 inline mr-1.5 -mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
-                Payment will be collected upon {orderType === 'delivery' ? 'delivery' : 'pickup'}. Online payment coming soon.
+            <div className="bg-white/5 rounded-lg p-6 border border-white/5">
+              <h2 className="font-heading text-xl tracking-wider uppercase text-primary mb-3">Pickup Location</h2>
+              <p className="text-sm text-slate-400">
+                <span className="text-bone">Muhammad Ali As-Saadi St. 24, Amman</span>
+              </p>
+              <p className="text-sm text-slate-400 mt-1">
+                Hours: <span className="text-bone">Sat–Thu: 11AM–9PM</span>
               </p>
             </div>
+
+            {/* Acknowledgment Checkbox */}
+            <label className="flex gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                onChange={e => setAcknowledged(e.target.checked)}
+                className="accent-primary w-5 h-5 mt-0.5 flex-shrink-0"
+              />
+              <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
+                I understand that my items will be reserved for <span className="text-bone font-medium">{settings.reservationDays} day{settings.reservationDays !== 1 ? 's' : ''}</span> and
+                payment is <span className="text-bone font-medium">cash only</span> at pickup. If I don&apos;t pick up within this period, the reservation will expire and items will become available again.
+              </span>
+            </label>
 
             {/* Error */}
             {error && (
@@ -289,14 +206,14 @@ export default function CheckoutPage() {
               disabled={loading}
               className="w-full lg:hidden bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-lg uppercase tracking-wider text-sm transition-colors disabled:opacity-50"
             >
-              {loading ? 'Placing Order...' : `Place Order · ${orderTotal.toFixed(2)} JOD`}
+              {loading ? 'Reserving...' : `Reserve Items · ${totalPrice.toFixed(2)} JOD`}
             </button>
           </form>
 
           {/* Summary - Right */}
           <div className="lg:col-span-2 order-first lg:order-last">
             <div className="bg-white/5 rounded-lg border border-white/5 p-6 lg:sticky lg:top-24">
-              <h2 className="font-heading text-xl tracking-wider uppercase mb-4">Order Summary</h2>
+              <h2 className="font-heading text-xl tracking-wider uppercase mb-4">Reservation Summary</h2>
 
               {/* Items */}
               <div className="space-y-3 mb-6">
@@ -315,33 +232,13 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Totals */}
+              {/* Total */}
               <div className="border-t border-white/10 pt-4 space-y-2 text-sm">
-                <div className="flex justify-between text-slate-400">
-                  <span>Subtotal</span>
-                  <span>{totalPrice.toFixed(2)} JOD</span>
-                </div>
-                {settings.tax.enabled && (
-                  <div className="flex justify-between text-slate-400">
-                    <span>{settings.tax.label} ({settings.tax.rate}%)</span>
-                    <span>{taxAmount.toFixed(2)} JOD</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-slate-400">
-                  <span>Delivery</span>
-                  <span>
-                    {orderType === 'pickup'
-                      ? 'Free'
-                      : city
-                        ? `${deliveryFee.toFixed(2)} JOD`
-                        : 'Select city'
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between font-bold text-lg pt-2 border-t border-white/10">
+                <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">{orderTotal.toFixed(2)} JOD</span>
+                  <span className="text-primary">{totalPrice.toFixed(2)} JOD</span>
                 </div>
+                <p className="text-[10px] text-slate-600">Cash payment at pickup</p>
               </div>
 
               {/* Submit - Desktop */}
@@ -352,7 +249,7 @@ export default function CheckoutPage() {
                 onClick={handleSubmit}
                 className="hidden lg:block w-full mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-lg uppercase tracking-wider text-sm transition-colors disabled:opacity-50"
               >
-                {loading ? 'Placing Order...' : 'Place Order'}
+                {loading ? 'Reserving...' : 'Reserve Items'}
               </button>
             </div>
           </div>

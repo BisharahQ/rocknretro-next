@@ -76,6 +76,7 @@ export default function AdminProducts() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 text-left">
+                <th className="px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">ID</th>
                 <th className="px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Product</th>
                 <th className="px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Category</th>
                 <th className="px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Size</th>
@@ -88,6 +89,7 @@ export default function AdminProducts() {
             <tbody>
               {filtered.map(product => (
                 <tr key={product.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <td className="px-4 py-3 text-slate-500 font-mono text-xs">{product.id}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 relative rounded overflow-hidden flex-shrink-0">
@@ -103,16 +105,22 @@ export default function AdminProducts() {
                   <td className="px-4 py-3 text-slate-400">{product.size}</td>
                   <td className="px-4 py-3 text-primary font-medium">{product.price} JOD</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleSold(product)}
-                      className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                        product.sold
-                          ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
-                          : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
-                      }`}
-                    >
-                      {product.sold ? 'Sold' : 'Available'}
-                    </button>
+                    {product.reserved && !product.sold ? (
+                      <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-900/30 text-amber-400">
+                        Reserved
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => toggleSold(product)}
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          product.sold
+                            ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                            : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                        }`}
+                      >
+                        {product.sold ? 'Sold' : 'Available'}
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <button

@@ -93,7 +93,7 @@ function ShopPage() {
     }
 
     if (hideSold) {
-      result = result.filter(p => !p.sold);
+      result = result.filter(p => !p.sold && !p.reserved);
     }
 
     switch (sort) {
@@ -173,7 +173,7 @@ function ShopPage() {
                 : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
             }`}
           >
-            Hide Sold
+            Hide Unavailable
           </button>
         </div>
 

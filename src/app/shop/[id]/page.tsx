@@ -28,7 +28,7 @@ export default function ProductDetailPage() {
       setProduct(prod);
       if (prod) {
         const rel = all
-          .filter((p: Product) => p.cat === prod.cat && p.id !== prod.id && !p.sold)
+          .filter((p: Product) => p.cat === prod.cat && p.id !== prod.id && !p.sold && !p.reserved)
           .slice(0, 4);
         setRelated(rel);
       }
@@ -64,8 +64,10 @@ export default function ProductDetailPage() {
 
   const images = product.images && product.images.length > 0 ? product.images : [product.img];
 
+  const unavailable = product.sold || product.reserved;
+
   const handleAdd = () => {
-    if (product.sold) return;
+    if (unavailable) return;
     addItem(product);
     show(`${product.name} added to bag!`);
   };
@@ -102,7 +104,14 @@ export default function ProductDetailPage() {
                   </span>
                 </div>
               )}
-              {product.badge && !product.sold && (
+              {product.reserved && !product.sold && (
+                <div className="absolute inset-0 bg-amber-950/60 flex items-center justify-center">
+                  <span className="bg-amber-500 text-black px-6 py-3 rounded font-heading text-2xl tracking-wider uppercase -rotate-12">
+                    Reserved
+                  </span>
+                </div>
+              )}
+              {product.badge && !unavailable && (
                 <span className={`absolute top-4 left-4 px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider ${
                   product.badge === 'Hot' ? 'bg-primary text-white' :
                   product.badge === 'Rare' ? 'bg-gold-accent text-black' :
@@ -136,12 +145,13 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xs tracking-[0.3em] text-primary uppercase">{product.cat}</span>
               {product.sold && <span className="text-xs tracking-[0.3em] text-slate-500 uppercase">Sold Out</span>}
+              {product.reserved && !product.sold && <span className="text-xs tracking-[0.3em] text-amber-500 uppercase">Reserved</span>}
             </div>
 
             <h1 className="font-heading text-4xl lg:text-5xl tracking-wider uppercase mb-2">{product.name}</h1>
             <p className="text-slate-400 text-lg mb-6">{product.type}</p>
 
-            <p className={`font-heading text-4xl mb-8 ${product.sold ? 'text-slate-500 line-through' : 'text-primary'}`}>
+            <p className={`font-heading text-4xl mb-8 ${product.sold ? 'text-slate-500 line-through' : product.reserved ? 'text-amber-500' : 'text-primary'}`}>
               {product.price} JOD
             </p>
 
@@ -172,15 +182,15 @@ export default function ProductDetailPage() {
             {/* Add to cart */}
             <button
               onClick={handleAdd}
-              disabled={product.sold}
+              disabled={unavailable}
               className={`w-full py-4 rounded-lg font-bold uppercase tracking-wider text-sm transition-all flex items-center justify-center gap-2 ${
-                product.sold
+                unavailable
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                   : 'bg-primary hover:bg-primary-dark text-white hover:shadow-lg hover:shadow-red-900/30'
               }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              {product.sold ? 'Sold Out' : 'Add to Bag'}
+              {product.sold ? 'Sold Out' : product.reserved ? 'Reserved' : 'Add to Bag'}
             </button>
 
             {/* Shipping info */}
