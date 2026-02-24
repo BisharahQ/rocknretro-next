@@ -45,6 +45,22 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 12;
 
+// Known multi-word brand names — single-word brands are auto-detected
+const MULTI_WORD_BRANDS = [
+  'Dr. Martens', 'Guns N\' Roses', 'Linkin Park', 'Limp Bizkit',
+  'Five Finger Death Punch', 'Rolling Stones', 'Parkway Drive',
+  'Of Mice & Men', 'Marilyn Manson', 'Chelsea Grin', 'Dark Divine',
+  'AC/DC', 'MCR',
+];
+
+function extractBrand(name: string): string {
+  for (const brand of MULTI_WORD_BRANDS) {
+    if (name.toLowerCase().startsWith(brand.toLowerCase())) return brand;
+  }
+  // Fall back to first word
+  return name.split(' ')[0];
+}
+
 function ShopPage() {
   const searchParams = useSearchParams();
   const initialCat = searchParams.get('cat') || 'all';
@@ -57,6 +73,7 @@ function ShopPage() {
   const [search, setSearch] = useState('');
   const [showCount, setShowCount] = useState(PAGE_SIZE);
   const [hideSold, setHideSold] = useState(false);
+  const [brand, setBrand] = useState('All Brands');
 
   useEffect(() => {
     fetch('/api/products')
@@ -70,7 +87,13 @@ function ShopPage() {
   // Reset show count on filter change
   useEffect(() => {
     setShowCount(PAGE_SIZE);
-  }, [category, size, sort, search, hideSold]);
+  }, [category, size, sort, search, hideSold, brand]);
+
+  // Derive unique brands from products
+  const brands = useMemo(() => {
+    const set = new Set(products.map(p => extractBrand(p.name)));
+    return ['All Brands', ...Array.from(set).sort()];
+  }, [products]);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -81,6 +104,10 @@ function ShopPage() {
 
     if (size !== 'All Sizes') {
       result = result.filter(p => p.size === size);
+    }
+
+    if (brand !== 'All Brands') {
+      result = result.filter(p => extractBrand(p.name) === brand);
     }
 
     if (search) {
@@ -111,7 +138,7 @@ function ShopPage() {
     }
 
     return result;
-  }, [products, category, size, sort, search, hideSold]);
+  }, [products, category, size, sort, search, hideSold, brand]);
 
   const visible = filtered.slice(0, showCount);
   const hasMore = showCount < filtered.length;
@@ -141,6 +168,17 @@ function ShopPage() {
               className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-bone placeholder:text-slate-600 focus:ring-1 focus:ring-primary focus:border-primary outline-none"
             />
           </div>
+
+          {/* Brand filter */}
+          <select
+            value={brand}
+            onChange={e => setBrand(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-bone focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer"
+          >
+            {brands.map(b => (
+              <option key={b} value={b} className="bg-surface text-bone">{b}</option>
+            ))}
+          </select>
 
           {/* Size filter */}
           <select
@@ -218,7 +256,7 @@ function ShopPage() {
             <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <p className="text-slate-500 text-lg">No products found</p>
             <p className="text-slate-600 text-sm mt-1">Try adjusting your filters</p>
-            <button onClick={() => { setCategory('all'); setSize('All Sizes'); setSearch(''); setHideSold(false); }} className="mt-4 text-primary hover:text-primary-dark transition-colors text-sm">
+            <button onClick={() => { setCategory('all'); setSize('All Sizes'); setSearch(''); setHideSold(false); setBrand('All Brands'); }} className="mt-4 text-primary hover:text-primary-dark transition-colors text-sm">
               Clear all filters
             </button>
           </div>
