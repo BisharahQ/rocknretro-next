@@ -4,6 +4,8 @@ import { getAllProducts } from '@/lib/products';
 import { getSections } from '@/lib/sections';
 import FeaturedGrid from '@/components/FeaturedGrid';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const products = await getAllProducts();
   const sections = await getSections();

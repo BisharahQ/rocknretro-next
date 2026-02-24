@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSections, updateSections } from '@/lib/sections';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const sections = await getSections();
   return NextResponse.json(sections);
