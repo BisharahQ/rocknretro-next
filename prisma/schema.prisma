@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  type        String
+  size        String
+  cat         String
+  price       Float
+  img         String
+  images      String[]
+  badge       String?
+  sold        Boolean     @default(false)
+  reserved    Boolean     @default(false)
+  description String?
+  featured    Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customerName  String
+  customerPhone String
+  customerNotes String?
+  subtotal      Float
+  total         Float
+  status        String      @default("reserved")
+  reservedUntil DateTime
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Int
+  image     String
+}
+
+model ShopSettings {
+  id              Int @id @default(1)
+  reservationDays Int @default(2)
+}
+
+model SiteConfig {
+  id   Int  @id @default(1)
+  data Json
+}

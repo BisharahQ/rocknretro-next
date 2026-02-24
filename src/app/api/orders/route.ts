@@ -4,7 +4,7 @@ import { getProductById, updateProduct } from '@/lib/products';
 import { getSettings } from '@/lib/settings';
 
 export async function GET() {
-  const orders = getAllOrders();
+  const orders = await getAllOrders();
   return NextResponse.json(orders);
 }
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Check all items are still available (not sold or reserved)
     for (const item of body.items) {
-      const product = getProductById(item.productId);
+      const product = await getProductById(item.productId);
       if (!product || product.sold || product.reserved) {
         return NextResponse.json(
           { error: `"${item.name}" is no longer available` },
@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate reservation expiry
-    const settings = getSettings();
+    const settings = await getSettings();
     const reservedUntil = new Date();
     reservedUntil.setDate(reservedUntil.getDate() + settings.reservationDays);
 
-    const order = createOrder({
+    const order = await createOrder({
       items: body.items,
       customer: {
         name: body.customer.name,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Mark items as reserved
     for (const item of order.items) {
-      updateProduct(item.productId, { reserved: true });
+      await updateProduct(item.productId, { reserved: true });
     }
 
     return NextResponse.json(order, { status: 201 });

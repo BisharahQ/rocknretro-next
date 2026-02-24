@@ -4,9 +4,9 @@ import { getAllProducts } from '@/lib/products';
 import { getSections } from '@/lib/sections';
 import FeaturedGrid from '@/components/FeaturedGrid';
 
-export default function HomePage() {
-  const products = getAllProducts();
-  const sections = getSections();
+export default async function HomePage() {
+  const products = await getAllProducts();
+  const sections = await getSections();
   const featured = products.filter(p => p.featured && !p.sold).slice(0, 6);
 
   const categoryData = sections.categories.map(cat => ({

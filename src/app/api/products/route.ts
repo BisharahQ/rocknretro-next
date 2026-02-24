@@ -3,7 +3,7 @@ import { getAllProducts, createProduct } from '@/lib/products';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  let products = getAllProducts();
+  let products = await getAllProducts();
 
   const cat = searchParams.get('cat');
   if (cat && cat !== 'all') {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const product = createProduct(body);
+    const product = await createProduct(body);
     return NextResponse.json(product, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Invalid data' }, { status: 400 });

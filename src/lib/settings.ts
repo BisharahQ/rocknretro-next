@@ -1,17 +1,20 @@
+import { prisma } from './db';
 import { ShopSettings } from '@/types';
-import fs from 'fs';
-import path from 'path';
 
-const DATA_PATH = path.join(process.cwd(), 'src', 'data', 'settings.json');
-
-export function getSettings(): ShopSettings {
-  const raw = fs.readFileSync(DATA_PATH, 'utf-8');
-  return JSON.parse(raw);
+export async function getSettings(): Promise<ShopSettings> {
+  const row = await prisma.shopSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, reservationDays: 2 },
+  });
+  return { reservationDays: row.reservationDays };
 }
 
-export function updateSettings(updates: Partial<ShopSettings>): ShopSettings {
-  const current = getSettings();
-  const updated = { ...current, ...updates };
-  fs.writeFileSync(DATA_PATH, JSON.stringify(updated, null, 2), 'utf-8');
-  return updated;
+export async function updateSettings(updates: Partial<ShopSettings>): Promise<ShopSettings> {
+  const row = await prisma.shopSettings.upsert({
+    where: { id: 1 },
+    update: { ...(updates.reservationDays !== undefined && { reservationDays: updates.reservationDays }) },
+    create: { id: 1, reservationDays: updates.reservationDays ?? 2 },
+  });
+  return { reservationDays: row.reservationDays };
 }
