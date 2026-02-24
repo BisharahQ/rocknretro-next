@@ -8,6 +8,7 @@ import { Product } from '@/types';
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const loadProducts = () => {
     fetch('/api/products').then(r => r.json()).then(setProducts);
@@ -40,8 +41,8 @@ export default function AdminProducts() {
   };
 
   const deleteProduct = async (id: number) => {
-    if (!confirm('Delete this product?')) return;
     await fetch(`/api/products/${id}`, { method: 'DELETE' });
+    setDeleteId(null);
     loadProducts();
   };
 
@@ -144,7 +145,7 @@ export default function AdminProducts() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </Link>
                       <button
-                        onClick={() => deleteProduct(product.id)}
+                        onClick={() => setDeleteId(product.id)}
                         className="text-slate-400 hover:text-primary transition-colors"
                         title="Delete"
                       >
@@ -160,6 +161,38 @@ export default function AdminProducts() {
       </div>
 
       <p className="text-xs text-slate-600 mt-4">{filtered.length} products</p>
+
+      {/* Delete Confirmation Modal */}
+      {deleteId !== null && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60" onClick={() => setDeleteId(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-surface border border-white/10 rounded-lg p-6 max-w-sm w-full shadow-xl">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </div>
+              <h3 className="font-heading text-xl tracking-wider uppercase text-center mb-2">Delete Product</h3>
+              <p className="text-sm text-slate-400 text-center mb-6">
+                Are you sure you want to delete <span className="text-bone font-medium">{products.find(p => p.id === deleteId)?.name}</span>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteId(null)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteProduct(deleteId)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
